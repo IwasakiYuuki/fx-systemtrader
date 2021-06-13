@@ -3,7 +3,7 @@ steps:
     name: python
     dir: 'fst/dummy_api'
     entrypoint: 'pip'
-    args: ["install", "flask", "flask-restful", "pytest", "--user"]
+    args: ["install", "flask", "flask-restful", "pytest", "jsonschema", "--user"]
 
   - id: 'dummy api unit test'
     name: python
