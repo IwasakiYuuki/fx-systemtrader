@@ -1,12 +1,12 @@
 steps:
   - id: 'dummy api install dependencies'
     name: python
-    dir: 'dummy_api'
+    dir: 'fst/dummy_api'
     entrypoint: 'pip'
     args: ["install", "flask", "flask-restful", "pytest", "--user"]
 
   - id: 'dummy api unit test'
     name: python
-    dir: 'dummy_api'
+    dir: 'fst/dummy_api'
     entrypoint: 'python'
     args: ["-m", "pytest"]
