@@ -1,0 +1,14 @@
+steps:
+  - id: 'dummy api install dependencies'
+    name: python
+    dir: 'fst/dummy_api'
+    entrypoint: 'pip'
+    args: ["install", "flask", "flask-restful", "pytest", "jsonschema", "--user"]
+
+  - id: 'dummy api unit test'
+    name: python
+    dir: 'fst/dummy_api'
+    entrypoint: 'python'
+    args: ["-m", "pytest"]
+    env:
+      - 'PYTHONPATH=/workspace/fst/dummy_api/src'
