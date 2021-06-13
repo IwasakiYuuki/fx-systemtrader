@@ -10,3 +10,5 @@ steps:
     dir: 'fst/dummy_api'
     entrypoint: 'python'
     args: ["-m", "pytest"]
+    env:
+      - 'PYTHONPATH=/workspace/fst/dummy_api/src'
