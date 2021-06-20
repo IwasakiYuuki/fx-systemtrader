@@ -35,11 +35,11 @@ steps:
       - |
           # Develop branch
           if [ $BRANCH_NAME = "develop" ]; then
-            docker push gcr.io/$PROJECT_ID/dummy-api:$SHORT_SHA
+            docker push gcr.io/$PROJECT_ID/dummy-api
 
           # Main branch
           elif [ $BRANCH_NAME = "main" ]; then
-            docker push gcr.io/$PROJECT_ID/dummy-api:$SHORT_SHA
+            docker push gcr.io/$PROJECT_ID/dummy-api
 
           # Another branch
           else
