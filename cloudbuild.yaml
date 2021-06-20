@@ -20,6 +20,8 @@ steps:
       - 'build'
       - '-t'
       - 'gcr.io/$PROJECT_ID/dummy-api:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/dummy-api:latest'
       - '-f'
       - '/workspace/fst/dummy_api/Dockerfile'
       - '.'
