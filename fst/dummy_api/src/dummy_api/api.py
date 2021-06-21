@@ -6,6 +6,7 @@ Github: https://github.com/IwasakiYuuki
 Description: 
 A dummy of OANDA API. This API server sends random values related to fx.
 """
+import os
 from flask import Flask, request, json, jsonify, Blueprint
 from flask_restful import reqparse, abort, Resource, Api
 from dummy_api.resources.instrument import Instrument
@@ -47,7 +48,8 @@ def handle_exception(e):
     ), 500
     
 def main():
-    app.run(debug=False, host="0.0.0.0", port=80)
+    port = os.environ.get('PORT', 80)
+    app.run(debug=False, host="0.0.0.0", port=port)
 
 if __name__ == '__main__':
     main()
