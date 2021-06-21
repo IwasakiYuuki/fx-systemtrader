@@ -48,8 +48,8 @@ def handle_exception(e):
     ), 500
     
 def main():
-    port = os.environ.get('PORT', 80)
-    app.run(debug=False, host="0.0.0.0", port=port)
+    port = os.environ.get('PORT', '80')
+    app.run(debug=False, host="0.0.0.0", port=int(port))
 
 if __name__ == '__main__':
     main()
