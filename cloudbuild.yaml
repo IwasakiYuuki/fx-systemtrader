@@ -45,3 +45,73 @@ steps:
           else
             echo "Branch name : $BRANCH_NAME"
           fi
+
+  - id: 'tf init'
+    name: 'hashicorp/terraform:1.0.0'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          if [ $BRANCH_NAME = "develop" ]; then
+            cd environments/dev
+            terraform init
+          elif [ $BRANCH_NAME = "main" ]: then
+            cd environments/prod
+            terraform init
+          else
+            for dir in environments/*/
+            do
+              cd ${dir}   
+              env=${dir%*/}
+              env=${env#*/}
+              echo ""
+              echo "*************** TERRAFORM INIT ******************"
+              echo "******* At environment: ${env} ********"
+              echo "*************************************************"
+              terraform init || exit 1
+              cd ../../
+            done
+          fi
+
+  - id: 'tf plan'
+    name: 'hashicorp/terraform:1.0.0'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          if [ $BRANCH_NAME = "develop" ]; then
+            cd environments/dev
+            terraform plan
+          elif [ $BRANCH_NAME = "main" ]: then
+            cd environments/prod
+            terraform plan
+          else
+            for dir in environments/*/
+            do
+              cd ${dir}   
+              env=${dir%*/}
+              env=${env#*/}
+              echo ""
+              echo "*************** TERRAFORM INIT ******************"
+              echo "******* At environment: ${env} ********"
+              echo "*************************************************"
+              terraform plan || exit 1
+              cd ../../
+            done
+          fi
+
+  - id: 'tf apply'
+    name: 'hashicorp/terraform:1.0.0'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          if [ $BRANCH_NAME = "develop" ]; then
+            cd environments/dev
+            terraform apply
+          elif [ $BRANCH_NAME = "main" ]: then
+            cd environments/prod
+            terraform apply
+          else
+            echo "Branch name : $BRANCH_NAME"
+          fi
