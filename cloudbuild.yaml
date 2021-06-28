@@ -108,10 +108,10 @@ steps:
       - |
           if [ $BRANCH_NAME = "develop" ]; then
             cd environments/dev
-            terraform apply
+            terraform apply -auto-approve
           elif [ $BRANCH_NAME = "main" ]; then
             cd environments/prod
-            terraform apply
+            terraform apply -auto-approve
           else
             echo "Branch name : $BRANCH_NAME"
           fi
