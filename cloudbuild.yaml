@@ -55,7 +55,7 @@ steps:
           if [ $BRANCH_NAME = "develop" ]; then
             cd environments/dev
             terraform init
-          elif [ $BRANCH_NAME = "main" ]: then
+    elif [ $BRANCH_NAME = "main" ]; then
             cd environments/prod
             terraform init
           else
@@ -82,7 +82,7 @@ steps:
           if [ $BRANCH_NAME = "develop" ]; then
             cd environments/dev
             terraform plan
-          elif [ $BRANCH_NAME = "main" ]: then
+          elif [ $BRANCH_NAME = "main" ]; then
             cd environments/prod
             terraform plan
           else
@@ -109,7 +109,7 @@ steps:
           if [ $BRANCH_NAME = "develop" ]; then
             cd environments/dev
             terraform apply
-          elif [ $BRANCH_NAME = "main" ]: then
+          elif [ $BRANCH_NAME = "main" ]; then
             cd environments/prod
             terraform apply
           else
