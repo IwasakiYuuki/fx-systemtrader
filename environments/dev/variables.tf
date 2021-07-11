@@ -1,6 +1,6 @@
 variable "project" {
   type    = string
-  default = "fx-systemtrader"
+  default = "fx-systemtrader-dev"
 }
 
 variable "region" {
