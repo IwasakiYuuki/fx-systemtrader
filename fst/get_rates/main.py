@@ -6,7 +6,7 @@ from google.cloud import storage
 
 def get_rates(request):
     endpoint = "http://192.168.10.10:80/candles"
-    #endpoint = "http://api-fxtrade.oanda.com/v1/candles"
+    # endpoint = "http://api-fxtrade.oanda.com/v1/candles"
 
     instrument = "USD_JPY"
     granularity = "M5"
@@ -31,23 +31,31 @@ def get_rates(request):
         endpoint,
         params=params,
     )
+    print("Receive response")
 
     if response.status_code != 200:
         print("Responsed status code is not 200.")
-        exit(1)
+        print(response.status_code)
+        print(response.text)
+        return "hoge"
+    print("Status code is 200.")
 
     if response.header["Content-Type"] != "application/json":
         print("Responsed content is not json format.")
-        exit(1)
+        print(response.header["Content-Type"])
+        return "huga"
+    print("Response header is application/json type")
 
     data = response.json()
     json_data = json.dumps(data, ensure_ascii=False, indent=2)
+    print("Complete dump to json data")
 
     upload_blob(
-        "fx-systemtrader_datalake",
+        "fx-systemtrader-dev-datalake",
         json_data,
         "rates/{}/{}.json".format(instrument, start.strftime("%Y/%m/%d"))
     )
+    print("Complete make object into GCS")
 
     return "Successful completion"
 

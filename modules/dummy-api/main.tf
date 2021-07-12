@@ -12,7 +12,7 @@ module "dummy-api-container" {
 resource "google_compute_instance" "dummy-api-1" {
   zone         = var.zone
   name         = "dummy-api-1"
-  machine_type = "e2-medium"
+  machine_type = "f1-micro"
 
   boot_disk {
     initialize_params {
