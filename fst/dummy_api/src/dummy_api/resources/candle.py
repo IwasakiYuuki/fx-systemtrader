@@ -44,7 +44,7 @@ parser.add_argument(
 parser.add_argument(
     'includeFirst',
     dest='includeFirst',
-    default=True,
+    default="True",
 )
 parser.add_argument(
     'dailyAlignment',
@@ -76,46 +76,68 @@ class Candle(Resource):
                 raise exceptions.InvalidInstrumentPair()
 
             granularity = args.granularity
-            if granularity is not None \
-                    and granularity not in ["S5", "S10", "S15", "S30",
-                                            "M1", "M2", "M3", "M5", "M15", "M30",
-                                            "H1", "H2", "H3", "H4", "H6", "H8", "H12",
-                                            "D", "W", "M"]:
+            if granularity is not None and granularity not in [
+                "S5",
+                "S10",
+                "S15",
+                "S30",
+                "M1",
+                "M2",
+                "M3",
+                "M5",
+                "M15",
+                "M30",
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H6",
+                "H8",
+                "H12",
+                "D",
+                "W",
+                    "M"]:
                 raise exceptions.InvalidParams(arg_name="granularity")
-            
+
             count = int(args.count)
             if not 0 <= count <= 5000:
                 raise exceptions.InvalidParams(arg_name="count")
 
             start = args.start
             if start:
-                start = datetime.datetime.fromisoformat(start.replace("Z", "+00:00"))
+                start = datetime.datetime.fromisoformat(
+                    start.replace("Z", "+00:00"))
 
             end = args.end
             if end:
-                end = datetime.datetime.fromisoformat(end.replace("Z", "+00:00"))
+                end = datetime.datetime.fromisoformat(
+                    end.replace("Z", "+00:00"))
 
             candle_format = args.candleFormat
             if candle_format not in ["midpoint", "bidask"]:
                 raise exceptions.InvalidParams(arg_name="candleFormat")
 
             include_first = args.includeFirst
-            if not isinstance(include_first, bool):
-                raise exceptions.InvalidParams(arg_name="includeFirst")
+            if not (include_first == "True" or include_first == "False")
+            raise exceptions.InvalidParams(arg_name="includeFirst")
+            if include_first == "True":
+                include_first = True
+            elif include_first == "False":
+                include_first = False
 
             daily_alignment = int(args.dailyAlignment)
             if not 0 <= daily_alignment <= 23:
                 raise exceptions.InvalidParams(arg_name="dailyAlignment")
-            
+
             alignment_timezone = args.alignmentTimezone
-            
+
             weekly_alignment = args.weeklyAlignment
-            if weekly_alignment not in ["Monday", 
-                                        "Tuesday", 
-                                        "Wednesday", 
-                                        "Thursday", 
-                                        "Friday", 
-                                        "Saturday", 
+            if weekly_alignment not in ["Monday",
+                                        "Tuesday",
+                                        "Wednesday",
+                                        "Thursday",
+                                        "Friday",
+                                        "Saturday",
                                         "Sunday"]:
                 raise exceptions.InvalidParams(arg_name="weeklyAlignment")
 
@@ -129,19 +151,19 @@ class Candle(Resource):
                 unit, num = granu[0], int(granu[1:])
 
             if num:
-                arg = {{"S":"seconds",
-                         "M":"minutes",
-                         "H":"hours"}[unit]: num}
+                arg = {{"S": "seconds",
+                        "M": "minutes",
+                        "H": "hours"}[unit]: num}
             else:
                 arg = {"days": {"D": 1,
                                 "W": 7,
-                                "M": 30,}[unit]}
+                                "M": 30, }[unit]}
 
             return datetime.timedelta(**arg)
 
         def gen_candle(time, candleformat):
             candle = dict()
-            candle["time"] = time.isoformat()+"Z"
+            candle["time"] = time.isoformat() + "Z"
             if candleformat == "midpoint":
                 candle.update({
                     "openMid": random.uniform(1.0, 2.0),
@@ -196,7 +218,7 @@ class Candle(Resource):
                 "candles": candles,
             }), 200)
 
-        except:
+        except BaseException:
             raise exceptions.InternalServerError()
 
         return response
