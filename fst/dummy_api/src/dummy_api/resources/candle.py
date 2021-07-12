@@ -118,8 +118,8 @@ class Candle(Resource):
                 raise exceptions.InvalidParams(arg_name="candleFormat")
 
             include_first = args.includeFirst
-            if not (include_first == "True" or include_first == "False")
-            raise exceptions.InvalidParams(arg_name="includeFirst")
+            if not (include_first == "True" or include_first == "False"):
+                raise exceptions.InvalidParams(arg_name="includeFirst")
             if include_first == "True":
                 include_first = True
             elif include_first == "False":
