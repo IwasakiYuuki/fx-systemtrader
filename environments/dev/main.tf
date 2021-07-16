@@ -13,6 +13,11 @@ module "vpc" {
   env    = var.env
 }
 
+module "firewall" {
+  source  = "../../modules/firewall"
+  network = module.vpc.network
+}
+
 module "dummy-api" {
   source = "../../modules/dummy-api"
   zone   = var.zone

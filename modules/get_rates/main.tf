@@ -26,10 +26,6 @@ resource "google_storage_bucket_object" "archive" {
   source = data.archive_file.get_rates.output_path
 }
 
-resource "google_storage_bucket" "datalake" {
-  name = "${var.project}-datalake"
-}
-
 resource "google_cloudfunctions_function" "function" {
   name        = "get_rates"
   description = "Get rates data from OANDA API"

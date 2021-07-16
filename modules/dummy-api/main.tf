@@ -1,3 +1,7 @@
+/**
+ * ダミーAPIコンテナイメージを使用するためのモジュール。
+ * コンテナの情報などをまとめて文字列として出力してくれるので、それをＶＭインスタンスで使用する。
+ */
 module "dummy-api-container" {
   source = "github.com/terraform-google-modules/terraform-google-container-vm"
 
@@ -9,9 +13,13 @@ module "dummy-api-container" {
   restart_policy = "Always"
 }
 
-resource "google_compute_instance" "dummy-api-1" {
+/**
+ * OANDA APIのダミー。
+ * 開発環境で使用するために建てたが、口座開設をしたらこっちではなく本物のAPIの開発環境用のものを使用する。
+ */
+resource "google_compute_instance" "dummy-api" {
   zone         = var.zone
-  name         = "dummy-api-1"
+  name         = "dummy-api"
   machine_type = "f1-micro"
 
   boot_disk {
@@ -24,7 +32,6 @@ resource "google_compute_instance" "dummy-api-1" {
   network_interface {
     subnetwork = var.subnet
     network_ip = "192.168.10.10"
-    access_config {}
   }
 
   metadata = {

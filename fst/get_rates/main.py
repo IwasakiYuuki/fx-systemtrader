@@ -36,13 +36,12 @@ def get_rates(request):
     if response.status_code != 200:
         print("Responsed status code is not 200.")
         print(response.status_code)
-        print(response.text)
         return "hoge"
     print("Status code is 200.")
 
-    if response.header["Content-Type"] != "application/json":
+    if response.headers["Content-Type"] != "application/json":
         print("Responsed content is not json format.")
-        print(response.header["Content-Type"])
+        print(response.headers["Content-Type"])
         return "huga"
     print("Response header is application/json type")
 
