@@ -106,12 +106,12 @@ class Candle(Resource):
             start = args.start
             if start:
                 start = datetime.datetime.fromisoformat(
-                    start.replace("Z", "+00:00"))
+                    start.replace("Z", ""))
 
             end = args.end
             if end:
                 end = datetime.datetime.fromisoformat(
-                    end.replace("Z", "+00:00"))
+                    end.replace("Z", ""))
 
             candle_format = args.candleFormat
             if candle_format not in ["midpoint", "bidask"]:
@@ -197,7 +197,7 @@ class Candle(Resource):
 
             else:
                 if start:
-                    end = datetime.datetime.now(datetime.timezone.utc)
+                    end = datetime.datetime.utcnow()
                     current = start
                     for i in range(count):
                         candles.append(gen_candle(current, candle_format))
@@ -206,7 +206,7 @@ class Candle(Resource):
                             break
 
                 else:
-                    end = datetime.datetime.now(datetime.timezone.utc)
+                    end = datetime.datetime.utcnow()
                     current = end
                     for i in range(count):
                         candles.append(gen_candle(current, candle_format))
