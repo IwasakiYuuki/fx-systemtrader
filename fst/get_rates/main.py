@@ -5,10 +5,23 @@ from google.cloud import storage
 
 
 def get_rates(request):
-    endpoint = "http://192.168.10.10:80/candles"
-    # endpoint = "http://api-fxtrade.oanda.com/v1/candles"
+    def _get_access_token():
+        client = storage.Client()
+        bucket = client.bucket("fx-systemtrader-dev-certifications")
+        blob = bucket.get_blob("oanda_access-token-demo.txt")
+        return blob.download_as_text()
 
+    # endpoint = "http://192.168.10.10:80/candles"
+    endpoint = "https://api-fxpractice.oanda.com/v3/instruments"
+    # endpoint = "https://api-fxtrade.oanda.com"
     instrument = "USD_JPY"
+    endpoint = "{}/{}/{}".format(endpoint, instrument, "candles")
+
+    headers = {
+        "Authorization": "Bearer {}".format(_get_access_token()),
+        "Content-Type": "application/json"
+    }
+
     granularity = "M5"
     include_first = False
     end = datetime.datetime.utcnow().replace(
@@ -20,16 +33,16 @@ def get_rates(request):
         return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     params = {
-        "instrument": instrument,
         "granularity": granularity,
-        "start": dt_to_str(start),
-        "end": dt_to_str(end),
+        "from": dt_to_str(start),
+        "to": dt_to_str(end),
         "includeFirst": include_first,
     }
 
     response = requests.get(
         endpoint,
         params=params,
+        headers=headers,
     )
     print("Receive response")
 

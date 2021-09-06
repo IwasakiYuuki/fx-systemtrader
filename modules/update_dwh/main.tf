@@ -28,7 +28,7 @@ resource "google_storage_bucket_object" "archive" {
   source = data.archive_file.update_dwh.output_path
 }
 
-resource "google_cloudfunctions_function" "function" {
+resource "google_cloudfunctions_function" "function2" {
   name        = "update_dwh"
   description = "Get rates data from OANDA API"
   runtime     = "python39"
@@ -45,7 +45,7 @@ resource "google_cloudfunctions_function" "function" {
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
   project        = var.project
-  cloud_function = google_cloudfunctions_function.function.name
+  cloud_function = google_cloudfunctions_function.function2.name
 
   role   = "roles/cloudfunctions.invoker"
   member = "serviceAccount:${google_service_account.invocation-user.email}"
@@ -59,7 +59,7 @@ resource "google_cloud_scheduler_job" "job" {
 
   http_target {
     http_method = "GET"
-    uri         = google_cloudfunctions_function.function.https_trigger_url
+    uri         = google_cloudfunctions_function.function2.https_trigger_url
 
     oidc_token {
       service_account_email = google_service_account.invocation-user.email
