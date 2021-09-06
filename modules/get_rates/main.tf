@@ -16,14 +16,9 @@ data "archive_file" "get_rates" {
   output_path = "${path.module}/source.zip"
 }
 
-#resource "google_storage_bucket" "bucket" {
-#  name = "get_rates-bucket"
-#}
-
 resource "google_storage_bucket_object" "archive" {
   name   = "get_rates-${data.archive_file.get_rates.output_md5}.zip"
   bucket = "get_rates-bucket"
-  #bucket = google_storage_bucket.bucket.name
   source = data.archive_file.get_rates.output_path
 }
 
@@ -48,4 +43,20 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 
   role   = "roles/cloudfunctions.invoker"
   member = "serviceAccount:${google_service_account.invocation-user.email}"
+}
+
+resource "google_cloud_scheduler_job" "job" {
+  name             = "get_rates_job"
+  schedule         = "5 0 * * 2-6"
+  time_zone        = "Etc/UTC"
+  attempt_deadline = "300s"
+
+  http_target {
+    http_method = "GET"
+    uri         = google_cloudfunctions_function.function.https_trigger_url
+
+    oidc_token {
+      service_account_email = google_service_account.invocation-user.email
+    }
+  }
 }

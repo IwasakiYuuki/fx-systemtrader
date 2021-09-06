@@ -27,6 +27,7 @@ def update_dwh(request):
         .result()
         .to_dataframe()
     )
+    print("Complete query")
     inserted_blobnames = list(
         query_df["time"].map(
             lambda x: prefix + x + ".json"))
@@ -52,6 +53,6 @@ def update_dwh(request):
             df,
             table_id
         )
-        print(load_job.result())
+        load_job.result()
 
-    return
+    return "Complete"
