@@ -12,7 +12,7 @@ resource "google_project_iam_member" "add-role-1" {
 
 data "archive_file" "get_rates" {
   type        = "zip"
-  source_dir  = "../../fst/get_rates"
+  source_dir  = "../../fst/cloud_functions/get_rates"
   output_path = "${path.module}/source.zip"
 }
 

@@ -24,14 +24,14 @@ module "firewall" {
   network = module.vpc.network
 }
 
-//=====================
-// A dummy of OANDA API
-//=====================
-module "dummy-api" {
-  source = "../../modules/dummy-api"
-  zone   = var.zone
-  subnet = module.vpc.subnet-1
-}
+////=====================
+//// A dummy of OANDA API
+////=====================
+//module "dummy-api" {
+//  source = "../../modules/dummy-api"
+//  zone   = var.zone
+//  subnet = module.vpc.subnet-1
+//}
 
 //================================
 // The function to get daily rates

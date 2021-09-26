@@ -18,7 +18,7 @@ resource "google_project_iam_member" "add-role-2" {
 
 data "archive_file" "update_dwh" {
   type        = "zip"
-  source_dir  = "../../fst/update_dwh"
+  source_dir  = "../../fst/cloud_functions/update_dwh"
   output_path = "${path.module}/source.zip"
 }
 
