@@ -1,117 +1,150 @@
 steps:
-  - id: 'dummy api install dependencies'
+  - id: 'Unit test for Cloud Functions and dummy_api'
     name: python
-    dir: 'fst/dummy_api'
-    entrypoint: 'pip'
-    args: ["install", "flask", "flask-restful", "pytest", "jsonschema", "--user"]
+    dir: 'fst'
+    entrypoint: 'make'
+    args: ["check"]
 
-  - id: 'dummy api unit test'
-    name: python
-    dir: 'fst/dummy_api'
-    entrypoint: 'python'
-    args: ["-m", "pytest"]
-    env:
-      - 'PYTHONPATH=/workspace/fst/dummy_api/src'
-
-  - id: 'Build image'
+  - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
-    dir: 'fst/dummy_api'
-    args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/dummy-api:latest'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/dummy-api:$SHORT_SHA'
-      - '-f'
-      - '/workspace/fst/dummy_api/Dockerfile'
-      - '.'
+    dir: 'fst'
+    entrypoint: 'make'
+    args: ["build"]
 
-  - id: 'Push Image'
+  - id: 'Push docker image'
     name: 'gcr.io/cloud-builders/docker'
-    dir: 'fst/dummy_api'
+    dir: 'fst'
     entrypoint: 'sh'
     args:
       - '-c'
       - |
           # Develop branch
           if [ $BRANCH_NAME = "develop" ]; then
-            docker push gcr.io/$PROJECT_ID/dummy-api
+            make push
 
           # Main branch
           elif [ $BRANCH_NAME = "main" ]; then
-            docker push gcr.io/$PROJECT_ID/dummy-api
+            make push
 
           # Another branch
           else
             echo "Branch name : $BRANCH_NAME"
+            echo "Nothing to do"
           fi
 
-  - id: 'tf init'
-    name: 'hashicorp/terraform:1.0.0'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          if [ $BRANCH_NAME = "develop" ]; then
-            cd environments/dev
-            terraform init
-          elif [ $BRANCH_NAME = "main" ]; then
-            cd environments/prod
-            terraform init
-          else
-            for dir in environments/*/
-            do
-              cd ${dir}   
-              env=${dir%*/}
-              env=${env#*/}
-              echo ""
-              echo "*************** TERRAFORM INIT ******************"
-              echo "******* At environment: ${env} ********"
-              echo "*************************************************"
-              terraform init || exit 1
-              cd ../../
-            done
-          fi
-
-  - id: 'tf plan'
-    name: 'hashicorp/terraform:1.0.0'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          if [ $BRANCH_NAME = "develop" ]; then
-            cd environments/dev
-            terraform plan
-          elif [ $BRANCH_NAME = "main" ]; then
-            cd environments/prod
-            terraform plan
-          else
-            for dir in environments/*/
-            do
-              cd ${dir}   
-              env=${dir%*/}
-              env=${env#*/}
-              echo ""
-              echo "*************** TERRAFORM INIT ******************"
-              echo "******* At environment: ${env} ********"
-              echo "*************************************************"
-              terraform plan || exit 1
-              cd ../../
-            done
-          fi
-
-  - id: 'tf apply'
-    name: 'hashicorp/terraform:1.0.0'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          if [ $BRANCH_NAME = "develop" ]; then
-            cd environments/dev
-            terraform apply -auto-approve
-          elif [ $BRANCH_NAME = "main" ]; then
-            cd environments/prod
-            terraform apply -auto-approve
-          else
-            echo "Branch name : $BRANCH_NAME"
-          fi
+#  - id: 'dummy api install dependencies'
+#    name: python
+#    dir: 'fst/dummy_api'
+#    entrypoint: 'pip'
+#    args: ["install", "flask", "flask-restful", "pytest", "jsonschema", "--user"]
+#
+#  - id: 'dummy api unit test'
+#    name: python
+#    dir: 'fst/dummy_api'
+#    entrypoint: 'python'
+#    args: ["-m", "pytest"]
+#    env:
+#      - 'PYTHONPATH=/workspace/fst/dummy_api/src'
+#
+#  - id: 'Build image'
+#    name: 'gcr.io/cloud-builders/docker'
+#    dir: 'fst/dummy_api'
+#    args:
+#      - 'build'
+#      - '-t'
+#      - 'gcr.io/$PROJECT_ID/dummy-api:latest'
+#      - '-t'
+#      - 'gcr.io/$PROJECT_ID/dummy-api:$SHORT_SHA'
+#      - '-f'
+#      - '/workspace/fst/dummy_api/Dockerfile'
+#      - '.'
+#
+#  - id: 'Push Image'
+#    name: 'gcr.io/cloud-builders/docker'
+#    dir: 'fst/dummy_api'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          # Develop branch
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            docker push gcr.io/$PROJECT_ID/dummy-api
+#
+#          # Main branch
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            docker push gcr.io/$PROJECT_ID/dummy-api
+#
+#          # Another branch
+#          else
+#            echo "Branch name : $BRANCH_NAME"
+#          fi
+#
+#  - id: 'tf init'
+#    name: 'hashicorp/terraform:1.0.0'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            cd environments/dev
+#            terraform init
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            cd environments/prod
+#            terraform init
+#          else
+#            for dir in environments/*/
+#            do
+#              cd ${dir}   
+#              env=${dir%*/}
+#              env=${env#*/}
+#              echo ""
+#              echo "*************** TERRAFORM INIT ******************"
+#              echo "******* At environment: ${env} ********"
+#              echo "*************************************************"
+#              terraform init || exit 1
+#              cd ../../
+#            done
+#          fi
+#
+#  - id: 'tf plan'
+#    name: 'hashicorp/terraform:1.0.0'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            cd environments/dev
+#            terraform plan
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            cd environments/prod
+#            terraform plan
+#          else
+#            for dir in environments/*/
+#            do
+#              cd ${dir}   
+#              env=${dir%*/}
+#              env=${env#*/}
+#              echo ""
+#              echo "*************** TERRAFORM INIT ******************"
+#              echo "******* At environment: ${env} ********"
+#              echo "*************************************************"
+#              terraform plan || exit 1
+#              cd ../../
+#            done
+#          fi
+#
+#  - id: 'tf apply'
+#    name: 'hashicorp/terraform:1.0.0'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            cd environments/dev
+#            terraform apply -auto-approve
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            cd environments/prod
+#            terraform apply -auto-approve
+#          else
+#            echo "Branch name : $BRANCH_NAME"
+#          fi

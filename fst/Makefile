@@ -7,7 +7,8 @@ endif
 
 # 以下で指定したサブディレクトリ全てにmakeを行う．
 SUBDIRS := \
-	dummy_api
+	cloud_functions \
+	dummy_api 
 
 # テスト
 check: $(SUBDIRS)
@@ -28,5 +29,13 @@ clean: $(SUBDIRS)
 # サブディレクトリへ再帰的にmakeを行う．
 $(SUBDIRS):
 	make -C $@ $(MAKECMDGOALS)
+
+define spushd
+pushd $1  > /dev/null
+endef
+
+define spopd
+popd $1 > /dev/null
+endef
 
 .PHONY: check build clean $(SUBDIRS) 
