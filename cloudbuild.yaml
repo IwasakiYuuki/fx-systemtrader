@@ -16,8 +16,8 @@ steps:
       - '-c'
       - |
           make build -e \
-          PROJECT_ID=$(PROJECT_ID) \
-          SHORT_SHA=$(SHORT_SHA)
+          PROJECT_ID=$PROJECT_ID \
+          SHORT_SHA=$SHORT_SHA
 
   - id: 'Push docker image'
     name: 'gcr.io/cloud-builders/docker'
@@ -29,14 +29,14 @@ steps:
           # Develop branch
           if [ $BRANCH_NAME = "develop" ]; then
             make push -e \
-            PROJECT_ID=$(PROJECT_ID) \
-            SHORT_SHA=$(SHORT_SHA)
+            PROJECT_ID=$PROJECT_ID \
+            SHORT_SHA=$SHORT_SHA
 
           # Main branch
           elif [ $BRANCH_NAME = "main" ]; then
             make push -e \
-            PROJECT_ID=$(PROJECT_ID) \
-            SHORT_SHA=$(SHORT_SHA)
+            PROJECT_ID=$PROJECT_ID \
+            SHORT_SHA=$SHORT_SHA
 
           # Another branch
           else
