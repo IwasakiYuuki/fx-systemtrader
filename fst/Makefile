@@ -28,7 +28,7 @@ clean: $(SUBDIRS)
 
 # サブディレクトリへ再帰的にmakeを行う．
 $(SUBDIRS):
-	make -C $@ $(MAKECMDGOALS)
+	make -e -C $@ $(MAKECMDGOALS)
 
 define spushd
 pushd $1  > /dev/null
