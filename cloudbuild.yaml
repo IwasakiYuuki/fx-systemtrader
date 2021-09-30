@@ -2,14 +2,22 @@ steps:
   - id: 'Unit test for Cloud Functions and dummy_api'
     name: python
     dir: 'fst'
-    entrypoint: 'make'
-    args: ["check"]
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          make check
 
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
     dir: 'fst'
-    entrypoint: 'make'
-    args: ["build"]
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          make build -e \
+          PROJECT_ID=$(PROJECT_ID) \
+          SHORT_SHA=$(SHORT_SHA)
 
   - id: 'Push docker image'
     name: 'gcr.io/cloud-builders/docker'
@@ -20,11 +28,15 @@ steps:
       - |
           # Develop branch
           if [ $BRANCH_NAME = "develop" ]; then
-            make push
+            make push -e \
+            PROJECT_ID=$(PROJECT_ID) \
+            SHORT_SHA=$(SHORT_SHA)
 
           # Main branch
           elif [ $BRANCH_NAME = "main" ]; then
-            make push
+            make push -e \
+            PROJECT_ID=$(PROJECT_ID) \
+            SHORT_SHA=$(SHORT_SHA)
 
           # Another branch
           else
