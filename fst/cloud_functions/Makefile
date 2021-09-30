@@ -38,7 +38,7 @@ $(foreach d,$(SUBDIRS),$(eval $(call create-venv-rule,$(d))))
 	touch $@
 
 clean:
-	$(foreach d,$^,$(call clean,$(d)))
+	$(foreach d,$(SUBDIRS),$(call clean,$(d)))
 
 build:
 	@echo "Nothing to do"
@@ -47,4 +47,4 @@ push:
 	@echo "Nothing to do"
 
 
-.PHONY: check clean
+.PHONY: check clean build push

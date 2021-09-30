@@ -24,7 +24,7 @@ check: $(VENV)
 
 
 # dockerイメージのビルド（checkを通過するのが必須）
-build: check
+build: 
 	docker build \
 			-t $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION) \
 			-t $(DOCKER_IMAGE):$(DOCKER_IMAGE_SHORT_SHA) .
@@ -55,3 +55,5 @@ $(VENV)/touchfile: requirements.txt
 	python3 -m venv $(VENV)
 	$(PIP) install -r requirements.txt
 	touch venv/touchfile
+
+.PHONY: check build push clean $(VENV)
