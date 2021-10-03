@@ -44,6 +44,15 @@ steps:
             echo "Nothing to do"
           fi
 
+  - id: 'clean'
+    name: 'gcr.io/cloud-builders/docker'
+    dir: 'fst'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          make clean
+
   - id: 'tf init'
     name: 'hashicorp/terraform:1.0.0'
     entrypoint: 'sh'
