@@ -1,5 +1,5 @@
 steps:
-  - id: 'Unit test for Cloud Functions and dummy_api'
+  - id: 'Unit test for python code'
     name: python
     dir: 'fst'
     entrypoint: 'sh'

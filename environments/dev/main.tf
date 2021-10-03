@@ -33,6 +33,13 @@ module "firewall" {
 //  subnet = module.vpc.subnet-1
 //}
 
+////================
+//// GKE module
+////================
+//module "gke" {
+//  source = "../../modules/gke"
+//}
+
 //================================
 // The function to get daily rates
 //================================

@@ -38,4 +38,4 @@ define spopd
 popd $1 > /dev/null
 endef
 
-.PHONY: check build clean $(SUBDIRS) 
+.PHONY: check build push clean $(SUBDIRS) 
