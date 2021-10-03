@@ -29,7 +29,7 @@ build:
 			-t $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION) \
 			-t $(DOCKER_IMAGE):$(DOCKER_IMAGE_SHORT_SHA) .
 
-push: build
+push:
 	docker push $(DOCKER_IMAGE) 
 
 

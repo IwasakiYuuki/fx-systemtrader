@@ -7,6 +7,7 @@ steps:
       - '-c'
       - |
           make check
+          make clean
 
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
@@ -43,15 +44,6 @@ steps:
             echo "Branch name : $BRANCH_NAME"
             echo "Nothing to do"
           fi
-
-  - id: 'clean'
-    name: 'gcr.io/cloud-builders/docker'
-    dir: 'fst'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          make clean
 
   - id: 'tf init'
     name: 'hashicorp/terraform:1.0.0'
@@ -122,6 +114,8 @@ steps:
           else
             echo "Branch name : $BRANCH_NAME"
           fi
+
+  timeout: 1800s
 
 #  - id: 'dummy api install dependencies'
 #    name: python
