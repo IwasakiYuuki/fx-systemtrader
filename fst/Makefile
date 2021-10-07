@@ -8,7 +8,8 @@ endif
 # 以下で指定したサブディレクトリ全てにmakeを行う．
 SUBDIRS := \
 	cloud_functions \
-	dummy_api 
+	dummy_api \
+	gke
 
 # テスト
 check: $(SUBDIRS)

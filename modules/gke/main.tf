@@ -8,16 +8,20 @@ resource "google_container_cluster" "cluster-1" {
   name     = var.cluster-name
   location = var.cluster-location
 
-  # クラスターのデフォルトのノードをプリエンティブノードにするため削除
+  // クラスターのデフォルトのノードをプリエンティブノードにするため削除
   remove_default_node_pool = true
   initial_node_count       = 1
+
+  workload_identity_config {
+    identity_namespace = "${var.project}.svc.id.goog"
+  }
 }
 
-# プリエンティブノード
-# vCPU:2, Memory:8GB
-# イメージ：Dockerを使用するContainer-Optimized OS（cos）
-# ブートディスク：100GB
-# 目的：Argoサーバ，MLFlowサーバなどの常駐プログラム用．
+// プリエンティブノード
+// vCPU:2, Memory:8GB
+// イメージ：Dockerを使用するContainer-Optimized OS（cos）
+// ブートディスク：100GB
+// 目的：Argoサーバ，MLFlowサーバなどの常駐プログラム用．
 resource "google_container_node_pool" "node-1" {
   name = var.primary_node-name
 
@@ -34,7 +38,7 @@ resource "google_container_node_pool" "node-1" {
     preemptible  = true
     machine_type = var.primary_node-machine_type
 
-    # Argoがcos-containerdでは動かないため, cosに変更
+    // Argoがcos-containerdでは動かないため, cosに変更
     image_type = var.primary_node-image_type
 
     service_account = google_service_account.gke-default-sa.email
@@ -42,4 +46,31 @@ resource "google_container_node_pool" "node-1" {
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }
+}
+
+// Kubernetesに必要なサービスアカウントをmapにして，
+// 下のモジュールで一括作成している
+locals {
+  service_accounts = {
+    mlflow-sa = toset([
+      "roles/storage.admin",
+    ]),
+  }
+}
+
+// このモジュールでは
+//  １．Googleサービスアカウントの作成
+//  ２．GoogleサービスアカウントへWorkload Identityのロールバインド
+//  ３．Googleサービスアカウントへ指定された権限の付与
+//  ４．対応するKubernetesサービスアカウントの作成
+//  ５．Kubernetesサービスアカウントへのアノテーション
+// を行っている．
+module "workload-identity" {
+  source   = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
+  for_each = local.service_accounts
+
+  name       = each.key
+  namespace  = "default"
+  project_id = var.project
+  roles      = each.value
 }

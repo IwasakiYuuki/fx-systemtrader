@@ -4,11 +4,13 @@ resource "google_service_account" "invocation-user" {
   display_name = "Invocation Service Account"
 }
 
-resource "google_project_iam_member" "add-role-1" {
-  project = var.project
-  role    = "roles/storage.objectCreator"
-  member  = "serviceAccount:${google_service_account.invocation-user.email}"
-}
+// Cloud Functionsが実際に使っているのはApp Engineのデフォルトサービス
+// アカウントだったようなので，権限の付与は削除
+//resource "google_project_iam_member" "add-role-1" {
+//  project = var.project
+//  role    = "roles/storage.objectCreator"
+//  member  = "serviceAccount:${google_service_account.invocation-user.email}"
+//}
 
 data "archive_file" "get_rates" {
   type        = "zip"

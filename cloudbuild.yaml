@@ -115,7 +115,19 @@ steps:
             echo "Branch name : $BRANCH_NAME"
           fi
 
-timeout: 1800s
+  - id: 'Deploy MLFlow and Argo on GKE'
+    name: 'gcr.io/cloud-builders/kubectl'
+    dir: 'fst/gke'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          make install 
+    env:
+      - CLOUDSDK_COMPUTE_ZONE=us-central1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster
+
+timeout: 3600s
 
 #  - id: 'dummy api install dependencies'
 #    name: python

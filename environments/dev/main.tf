@@ -8,6 +8,14 @@ provider "google-beta" {
   region  = var.region
 }
 
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host                   = "https://${module.gke.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+}
+
 //===============
 // Network module
 //===============
@@ -37,7 +45,8 @@ module "firewall" {
 // GKE module
 //================
 module "gke" {
-  source = "../../modules/gke"
+  source  = "../../modules/gke"
+  project = var.project
 }
 
 //================================

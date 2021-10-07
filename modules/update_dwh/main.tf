@@ -4,11 +4,11 @@ resource "google_service_account" "invocation-user" {
   display_name = "Invocation Service Account for update_dwh"
 }
 
-resource "google_project_iam_member" "add-role-1" {
-  project = var.project
-  role    = "roles/storage.objectViewer"
-  member  = "serviceAccount:${google_service_account.invocation-user.email}"
-}
+//resource "google_project_iam_member" "add-role-1" {
+//  project = var.project
+//  role    = "roles/storage.objectViewer"
+//  member  = "serviceAccount:${google_service_account.invocation-user.email}"
+//}
 
 resource "google_project_iam_member" "add-role-2" {
   project = var.project

@@ -1,3 +1,10 @@
+variable "project" {
+}
+
+variable "k8s_namespace" {
+  default = "default"
+}
+
 variable "cluster-name" {
   default = "data-analysis-cluster"
 }
