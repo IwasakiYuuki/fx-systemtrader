@@ -115,17 +115,27 @@ steps:
             echo "Branch name : $BRANCH_NAME"
           fi
 
+          #  - id: 'Deploy MLFlow and Argo on GKE'
+          #    name: 'gcr.io/cloud-builders/kubectl'
+          #    dir: 'fst/gke'
+          #    entrypoint: 'sh'
+          #    args:
+          #      - '-c'
+          #      - |
+          #          make install 
+          #    env:
+          #      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+          #      - 'CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster'
+
   - id: 'Deploy MLFlow and Argo on GKE'
-    name: 'gcr.io/cloud-builders/kubectl'
+    name: 'gcr.io/cloud-builders/gcloud'
     dir: 'fst/gke'
     entrypoint: 'sh'
     args:
       - '-c'
       - |
+          gcloud container clusters get-credentials data-analysis-cluster --zone us-central1-b --project fx-systemtrader-dev
           make install 
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster'
 
 timeout: 3600s
 
