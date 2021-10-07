@@ -17,6 +17,11 @@ clean:
 		rm mlflow-db-secret.yaml \
 	fi
 
+get-credentials:
+	gcloud container clusters get-credentials $(CLUSTER_NAME) \
+		--zone $(CLUSTER_ZONE) \
+		--project $(PROJECT_ID)
+
 install: mlflow-db-secret.yaml
 	# MLFlowのデプロイ
 	kubectl apply -f mlflow-db-secret.yaml

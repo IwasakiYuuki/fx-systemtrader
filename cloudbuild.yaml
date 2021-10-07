@@ -134,8 +134,14 @@ steps:
     args:
       - '-c'
       - |
-          gcloud container clusters get-credentials data-analysis-cluster --zone us-central1-b --project fx-systemtrader-dev
+          make get-credentials -e \
+          PROJECT_ID=$PROJECT_ID \
+          CLUSTER_NAME=$CLUSTER_NAME \
+          CLUSTER_ZONE=$CLUSTER_ZONE
           make install 
+    env:
+      - 'CLUSTER_NAME=data-analysis-cluster'
+      - 'CLUSTER_ZONE=us-central1-b'
 
 timeout: 3600s
 
