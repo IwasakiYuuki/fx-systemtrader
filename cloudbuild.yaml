@@ -123,9 +123,9 @@ steps:
       - '-c'
       - |
           make install 
-          #    env:
-          #      - CLOUDSDK_COMPUTE_ZONE=us-central1-b
-          #      - CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster'
 
 timeout: 3600s
 
