@@ -1,6 +1,6 @@
 steps:
   - id: 'Unit test for python code'
-    name: python
+    name: python:3.9.7
     dir: 'fst'
     entrypoint: 'sh'
     args:
