@@ -51,11 +51,16 @@ resource "google_container_node_pool" "node-1" {
 // Kubernetesに必要なサービスアカウントをmapにして，
 // 下のモジュールで一括作成している
 locals {
-  service_accounts = {
+  default_service_accounts = {
     mlflow-sa = toset([
       "roles/storage.admin",
     ]),
   }
+  //  argo_service_accounts = {
+  //    argo-sa = toset([
+  //      "roles/editor",
+  //    ]),
+  //  }
 }
 
 // このモジュールでは
@@ -65,12 +70,22 @@ locals {
 //  ４．対応するKubernetesサービスアカウントの作成
 //  ５．Kubernetesサービスアカウントへのアノテーション
 // を行っている．
-module "workload-identity" {
+module "default-workload-identity" {
   source   = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
-  for_each = local.service_accounts
+  for_each = local.default_service_accounts
 
   name       = each.key
   namespace  = "default"
   project_id = var.project
   roles      = each.value
 }
+
+//module "argo-workload-identity" {
+//  source   = "terraform-google-modules/kubernetes-engine/google//modules/workload-identity"
+//  for_each = local.argo_service_accounts
+//
+//  name       = each.key
+//  namespace  = "argo"
+//  project_id = var.project
+//  roles      = each.value
+//}

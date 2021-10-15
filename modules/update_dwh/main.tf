@@ -18,7 +18,7 @@ resource "google_project_iam_member" "add-role-2" {
 
 data "archive_file" "update_dwh" {
   type        = "zip"
-  source_dir  = "../../fst/cloud_functions/update_dwh"
+  source_dir  = "../../cloud_functions/update_dwh"
   output_path = "${path.module}/source.zip"
 }
 
@@ -33,14 +33,14 @@ resource "google_cloudfunctions_function" "function2" {
   description = "Get rates data from OANDA API"
   runtime     = "python39"
 
-  available_memory_mb           = 1024
-  source_archive_bucket         = "update_dwh-bucket"
-  source_archive_object         = google_storage_bucket_object.archive.name
-  trigger_http                  = true
-  timeout                       = 300
-  entry_point                   = "update_dwh"
-  vpc_connector                 = var.vpc-con
-  vpc_connector_egress_settings = "PRIVATE_RANGES_ONLY"
+  available_memory_mb   = 1024
+  source_archive_bucket = "update_dwh-bucket"
+  source_archive_object = google_storage_bucket_object.archive.name
+  trigger_http          = true
+  timeout               = 300
+  entry_point           = "update_dwh"
+  #  vpc_connector                 = var.vpc-con
+  #  vpc_connector_egress_settings = "PRIVATE_RANGES_ONLY"
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {

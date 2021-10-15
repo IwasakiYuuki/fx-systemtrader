@@ -55,7 +55,7 @@ module "gke" {
 module "get-rates" {
   source  = "../../modules/get_rates"
   project = var.project
-  vpc-con = module.vpc.subnet-1-vpc-con
+  //  vpc-con = module.vpc.subnet-1-vpc-con
 }
 
 //================================
@@ -64,5 +64,5 @@ module "get-rates" {
 module "update-dwh" {
   source  = "../../modules/update_dwh"
   project = var.project
-  vpc-con = module.vpc.subnet-1-vpc-con
+  //  vpc-con = module.vpc.subnet-1-vpc-con
 }

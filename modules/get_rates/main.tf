@@ -14,7 +14,7 @@ resource "google_service_account" "invocation-user" {
 
 data "archive_file" "get_rates" {
   type        = "zip"
-  source_dir  = "../../fst/cloud_functions/get_rates"
+  source_dir  = "../../cloud_functions/get_rates"
   output_path = "${path.module}/source.zip"
 }
 
@@ -29,14 +29,14 @@ resource "google_cloudfunctions_function" "function" {
   description = "Get rates data from OANDA API"
   runtime     = "python39"
 
-  available_memory_mb           = 128
-  source_archive_bucket         = "get_rates-bucket"
-  source_archive_object         = google_storage_bucket_object.archive.name
-  trigger_http                  = true
-  timeout                       = 60
-  entry_point                   = "get_rates"
-  vpc_connector                 = var.vpc-con
-  vpc_connector_egress_settings = "PRIVATE_RANGES_ONLY"
+  available_memory_mb   = 128
+  source_archive_bucket = "get_rates-bucket"
+  source_archive_object = google_storage_bucket_object.archive.name
+  trigger_http          = true
+  timeout               = 60
+  entry_point           = "get_rates"
+  #  vpc_connector                 = var.vpc-con
+  #  vpc_connector_egress_settings = "PRIVATE_RANGES_ONLY"
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {

@@ -1,76 +1,40 @@
 steps:
-  - id: 'Unit test for python code'
-    name: python:3.9.7
-    dir: 'fst'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          make check
-          make clean
+  - id: 'Unit test for Cloud Functions'
+  name: python:3.9.7
+  dir: 'fst'
+  entrypoint: 'sh'
+  args:
+  - -c
+  - |
+    make check
+    make clean
 
-  - id: 'Build docker image'
-    name: 'gcr.io/cloud-builders/docker'
-    dir: 'fst'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          make build -e \
-          PROJECT_ID=$PROJECT_ID \
-          SHORT_SHA=$SHORT_SHA
-
-  - id: 'Push docker image'
-    name: 'gcr.io/cloud-builders/docker'
-    dir: 'fst'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          # Develop branch
-          if [ $BRANCH_NAME = "develop" ]; then
-            make push -e \
-            PROJECT_ID=$PROJECT_ID \
-            SHORT_SHA=$SHORT_SHA
-
-          # Main branch
-          elif [ $BRANCH_NAME = "main" ]; then
-            make push -e \
-            PROJECT_ID=$PROJECT_ID \
-            SHORT_SHA=$SHORT_SHA
-
-          # Another branch
-          else
-            echo "Branch name : $BRANCH_NAME"
-            echo "Nothing to do"
-          fi
-
-  - id: 'tf init'
-    name: 'hashicorp/terraform:1.0.0'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-          if [ $BRANCH_NAME = "develop" ]; then
-            cd environments/dev
-            terraform init
-          elif [ $BRANCH_NAME = "main" ]; then
-            cd environments/prod
-            terraform init
-          else
-            for dir in environments/*/
-            do
-              cd ${dir}   
-              env=${dir%*/}
-              env=${env#*/}
-              echo ""
-              echo "*************** TERRAFORM INIT ******************"
-              echo "******* At environment: ${env} ********"
-              echo "*************************************************"
-              terraform init || exit 1
-              cd ../../
-            done
-          fi
+	- id: 'Init Terraform'
+	name: 'hashicorp/terraform:1.0.0'
+	entrypoint: 'sh'
+	args:
+	  - '-c'
+    - |
+      if [ $BRANCH_NAME = "develop" ]; then
+        cd environments/dev
+        terraform init
+      elif [ $BRANCH_NAME = "main" ]; then
+        cd environments/prod
+        terraform init
+      else
+        for dir in environments/*/
+        do
+          cd ${dir}
+          env=${dir%*/}
+          env=${env#*/}
+          echo ""
+          echo "*************** TERRAFORM INIT ******************"
+          echo "******* At environment: ${env} ********"
+          echo "*************************************************"
+          terraform init || exit 1
+          cd ../../
+        done
+      fi
 
   - id: 'tf plan'
     name: 'hashicorp/terraform:1.0.0'
@@ -140,6 +104,139 @@ steps:
       - 'CLUSTER_NAME=data-analysis-cluster'
       - 'CLUSTER_ZONE=us-central1-b'
       - 'PROJECT_ID=$PROJECT_ID'
+
+
+#  - id: 'Build docker image'
+#    name: 'gcr.io/cloud-builders/docker'
+#    dir: 'fst'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          make build -e \
+#          PROJECT_ID=$PROJECT_ID \
+#          SHORT_SHA=$SHORT_SHA
+#
+#  - id: 'Push docker image'
+#    name: 'gcr.io/cloud-builders/docker'
+#    dir: 'fst'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          # Develop branch
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            make push -e \
+#            PROJECT_ID=$PROJECT_ID \
+#            SHORT_SHA=$SHORT_SHA
+#
+#          # Main branch
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            make push -e \
+#            PROJECT_ID=$PROJECT_ID \
+#            SHORT_SHA=$SHORT_SHA
+#
+#          # Another branch
+#          else
+#            echo "Branch name : $BRANCH_NAME"
+#            echo "Nothing to do"
+#          fi
+#
+#  - id: 'tf init'
+#    name: 'hashicorp/terraform:1.0.0'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            cd environments/dev
+#            terraform init
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            cd environments/prod
+#            terraform init
+#          else
+#            for dir in environments/*/
+#            do
+#              cd ${dir}   
+#              env=${dir%*/}
+#              env=${env#*/}
+#              echo ""
+#              echo "*************** TERRAFORM INIT ******************"
+#              echo "******* At environment: ${env} ********"
+#              echo "*************************************************"
+#              terraform init || exit 1
+#              cd ../../
+#            done
+#          fi
+#
+#  - id: 'tf plan'
+#    name: 'hashicorp/terraform:1.0.0'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            cd environments/dev
+#            terraform plan
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            cd environments/prod
+#            terraform plan
+#          else
+#            for dir in environments/*/
+#            do
+#              cd ${dir}   
+#              env=${dir%*/}
+#              env=${env#*/}
+#              echo ""
+#              echo "*************** TERRAFORM INIT ******************"
+#              echo "******* At environment: ${env} ********"
+#              echo "*************************************************"
+#              terraform plan || exit 1
+#              cd ../../
+#            done
+#          fi
+#
+#  - id: 'tf apply'
+#    name: 'hashicorp/terraform:1.0.0'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          if [ $BRANCH_NAME = "develop" ]; then
+#            cd environments/dev
+#            terraform apply -auto-approve
+#          elif [ $BRANCH_NAME = "main" ]; then
+#            cd environments/prod
+#            terraform apply -auto-approve
+#          else
+#            echo "Branch name : $BRANCH_NAME"
+#          fi
+#
+#          #  - id: 'Deploy MLFlow and Argo on GKE'
+#          #    name: 'gcr.io/cloud-builders/kubectl'
+#          #    dir: 'fst/gke'
+#          #    entrypoint: 'sh'
+#          #    args:
+#          #      - '-c'
+#          #      - |
+#          #          make install 
+#          #    env:
+#          #      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+#          #      - 'CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster'
+#
+#  - id: 'Deploy MLFlow and Argo on GKE'
+#    name: 'gcr.io/cloud-builders/gcloud'
+#    dir: 'fst/gke'
+#    entrypoint: 'sh'
+#    args:
+#      - '-c'
+#      - |
+#          make get-credentials
+#          make install 
+#    env:
+#      - 'CLUSTER_NAME=data-analysis-cluster'
+#      - 'CLUSTER_ZONE=us-central1-b'
+#      - 'PROJECT_ID=$PROJECT_ID'
 
 timeout: 3600s
 
