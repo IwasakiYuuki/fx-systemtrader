@@ -9,7 +9,7 @@ steps:
         make check
         make clean
 
-	- id: 'terraform init'
+  - id: 'terraform init'
     name: 'hashicorp/terraform:1.0.0'
     entrypoint: 'sh'
     args:
