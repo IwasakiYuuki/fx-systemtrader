@@ -1,42 +1,42 @@
 steps:
   - id: 'Unit test for Cloud Functions'
-  name: python:3.9.7
-  dir: 'fst'
-  entrypoint: 'sh'
-  args:
-  - -c
-  - |
-    make check
-    make clean
+    name: python:3.9.7
+    dir: 'cloud_functions'
+    entrypoint: 'sh'
+    args:
+      - -c
+      - |
+        make check
+        make clean
 
-	- id: 'Init Terraform'
-	name: 'hashicorp/terraform:1.0.0'
-	entrypoint: 'sh'
-	args:
-	  - '-c'
-    - |
-      if [ $BRANCH_NAME = "develop" ]; then
-        cd environments/dev
-        terraform init
-      elif [ $BRANCH_NAME = "main" ]; then
-        cd environments/prod
-        terraform init
-      else
-        for dir in environments/*/
-        do
-          cd ${dir}
-          env=${dir%*/}
-          env=${env#*/}
-          echo ""
-          echo "*************** TERRAFORM INIT ******************"
-          echo "******* At environment: ${env} ********"
-          echo "*************************************************"
-          terraform init || exit 1
-          cd ../../
-        done
-      fi
+	- id: 'terraform init'
+    name: 'hashicorp/terraform:1.0.0'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        if [ $BRANCH_NAME = "develop" ]; then
+          cd environments/dev
+          terraform init
+        elif [ $BRANCH_NAME = "main" ]; then
+          cd environments/prod
+          terraform init
+        else
+          for dir in environments/*/
+          do
+            cd ${dir}
+            env=${dir%*/}
+            env=${env#*/}
+            echo ""
+            echo "*************** TERRAFORM INIT ******************"
+            echo "******* At environment: ${env} ********"
+            echo "*************************************************"
+            terraform init || exit 1
+            cd ../../
+          done
+          fi
 
-  - id: 'tf plan'
+  - id: 'terraform plan'
     name: 'hashicorp/terraform:1.0.0'
     entrypoint: 'sh'
     args:
@@ -63,7 +63,7 @@ steps:
             done
           fi
 
-  - id: 'tf apply'
+  - id: 'terraform apply'
     name: 'hashicorp/terraform:1.0.0'
     entrypoint: 'sh'
     args:
@@ -79,21 +79,9 @@ steps:
             echo "Branch name : $BRANCH_NAME"
           fi
 
-          #  - id: 'Deploy MLFlow and Argo on GKE'
-          #    name: 'gcr.io/cloud-builders/kubectl'
-          #    dir: 'fst/gke'
-          #    entrypoint: 'sh'
-          #    args:
-          #      - '-c'
-          #      - |
-          #          make install 
-          #    env:
-          #      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
-          #      - 'CLOUDSDK_CONTAINER_CLUSTER=data-analysis-cluster'
-
   - id: 'Deploy MLFlow and Argo on GKE'
     name: 'gcr.io/cloud-builders/gcloud'
-    dir: 'fst/gke'
+    dir: 'gke'
     entrypoint: 'sh'
     args:
       - '-c'
