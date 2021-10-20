@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: steps-
+spec:
+  entrypoint: iris-sample
+  serviceAccountName: argo-tutorial-sa
+
+  templates:
+  - name: iris-sample
+    steps:
+    - - name: train-model
+        template: train-model
+    - - name: upload-result
+        template: upload-result
+        arguments:
+          artifacts:
+          - name: input_img
+            from: "{{steps.train-model.outputs.artifacts.output_img}}"
+
+  - name: train-model
+    container:
+      image: gcr.io/fx-systemtrader-dev/train_model:latest
+      command: ["python"]
+      args: ["main.py"]
+    outputs:
+      artifacts:
+      - name: output_img
+        path: /tmp/img.png
+        gcs:
+          bucket: fx-systemtrader-dev-artifacts
+          key: output_img
+
+  - name: upload-result
+    container:
+      image: gcr.io/fx-systemtrader-dev/upload_result:latest
+      command: ["python"]
+      args: ["main.py"]
+    inputs:
+      artifacts:
+      - name: input_img
+        path: /tmp/img.png
+        gcs:
+          bucket: fx-systemtrader-dev-artifacts
+          key: output_img
