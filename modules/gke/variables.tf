@@ -36,3 +36,31 @@ variable "primary_node-machine_type" {
 variable "primary_node-image_type" {
   default = "COS"
 }
+
+variable "gpu_node-name" {
+  default = "gpu-node-1"
+}
+
+variable "gpu_node-min_node_count" {
+  default = 0
+}
+
+variable "gpu_node-max_node_count" {
+  default = 1
+}
+
+variable "gpu_node-image_type" {
+  default = "COS"
+}
+
+variable "gpu_node-machine_type" {
+  default = "n1-standard-2"
+}
+
+variable "gpu_node-gpu_type" {
+  default = "nvidia-tesla-t4"
+}
+
+variable "gpu_node-gpu_count" {
+  default = 1
+}

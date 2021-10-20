@@ -2,6 +2,7 @@ GCS_BUCKET_NAME=fx-systemtrader-dev-certifications
 GCS_OBJECT_NAME=mlflow-db-secret.yaml
 GCS_URL=gs://$(GCS_BUCKET_NAME)/$(GCS_OBJECT_NAME)
 ARGO_INSTALL_URL=https://github.com/argoproj/argo-workflows/releases/download/v3.1.13/install.yaml
+GPU_DAEMONSET_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
 
 clean:
 	if [ -f "mlflow-db-secret.yaml" ]; then \
@@ -23,6 +24,8 @@ install: mlflow-db-secret.yaml
 	kubectl create ns argo --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -n argo -f $(ARGO_INSTALL_URL)
 	kubectl create clusterrolebinding 2445yuuki-cluster-admin-binding --clusterrole=cluster-admin --user=2445yuuki@gmail.com --dry-run=client -o yaml | kubectl apply -f -
+
+	kubectl apply -f $(GPU_DAEMONSET_URL)
 
 uninstall: mlflow-db-secret.yaml
 	# MLFlowの削除
