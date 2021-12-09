@@ -1,0 +1,123 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: common-template
+  namespace: argo
+spec:
+  templates:
+  - name: tokenizer
+    container:
+      image: gcr.io/fx-systemtrader-dev/tokenizer
+      env:
+      - name: TEXT_FIELD_NAMES
+        value: "{{inputs.parameters.text_field_names}}"
+      - name: UNICODE_NORMALIZE_CHARFILTER
+        value: "True"
+      - name: LOWERCASE_FILTER
+        value: "True"
+      - name: COMPOUND_NOUN_FILTER
+        value: "True"
+      - name: WHITESPACE_FILTER
+        value: "True"
+    inputs:
+      parameters:
+      - name: text_field_names
+      artifacts:
+      - name: input_data
+        path: /tmp/input.csv
+    outputs:
+      artifacts:
+      - name: output_data
+        path: /tmp/output.csv
+
+  - name: get-data-from-bigquery
+    container:
+      image: gcr.io/fx-systemtrader-dev/get_data_from_bigquery
+      env:
+      - name: PROJECT_ID
+        value: "{{inputs.parameters.project_id}}"
+      - name: DB_NAME
+        value: "{{inputs.parameters.db_name}}"
+      - name: TABLE_NAME
+        value: "{{inputs.parameters.table_name}}"
+      - name: WHERE
+        value: "{{inputs.parameters.where}}"
+      - name: GROUP_BY
+        value: "{{inputs.parameters.group_by}}"
+      - name: LIMIT
+        value: "{{inputs.parameters.limit}}"
+      - name: OFFSET
+        value: "{{inputs.parameters.offset}}"
+    inputs:
+      parameters:
+      - name: project_id
+      - name: db_name
+      - name: table_name
+      - name: where
+        value: ""
+      - name: group_by
+        value: ""
+      - name: limit
+        value: ""
+      - name: offset
+        value: ""
+    outputs:
+      artifacts:
+      - name: output_data
+        path: /tmp/output.csv
+
+  - name: get-data-num-from-bigquery
+    container:
+      image: gcr.io/fx-systemtrader-dev/get_data_num_from_bigquery
+      env:
+      - name: PROJECT_ID
+        value: "{{inputs.parameters.project_id}}"
+      - name: DB_NAME
+        value: "{{inputs.parameters.db_name}}"
+      - name: TABLE_NAME
+        value: "{{inputs.parameters.table_name}}"
+      - name: ID_FIELD_NAME
+        value: "{{inputs.parameters.id_field_name}}"
+      - name: WHERE
+        value: "{{inputs.parameters.where}}"
+    inputs:
+      parameters:
+      - name: project_id
+      - name: db_name
+      - name: table_name
+      - name: id_field_name
+      - name: where
+        value: ""
+    outputs:
+      parameters:
+      - name: data_num
+        valueFrom:
+          path: /tmp/output.txt
+
+  - name: upload-data-to-bigquery
+    container:
+      image: gcr.io/fx-systemtrader-dev/upload_data_to_bigquery
+      env:
+      - name: PROJECT_ID
+        value: "{{inputs.parameters.project_id}}"
+      - name: DB_NAME
+        value: "{{inputs.parameters.db_name}}"
+      - name: TABLE_NAME
+        value: "{{inputs.parameters.table_name}}"
+      - name: DTYPE_DICT
+        value: "{{inputs.parameters.dtype_dict}}"
+      - name: ID_FIELD_NAME
+        value: "{{inputs.parameters.id_field_name}}"
+      - name: UPDATE_FIELD_NAMES
+        value: "{{inputs.parameters.update_field_names}}"
+    inputs:
+      parameters:
+      - name: project_id
+      - name: db_name
+      - name: table_name
+      - name: dtype_dict
+      - name: id_field_name
+      - name: update_field_names
+      artifacts:
+      - name: input_data
+        path: /tmp/input.csv
