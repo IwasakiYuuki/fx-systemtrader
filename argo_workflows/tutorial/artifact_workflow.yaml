@@ -30,9 +30,6 @@ spec:
       # artifacts can be directories as well as files
       - name: hello-art
         path: /tmp/hello_world.txt
-        gcs:
-          bucket: fx-systemtrader-dev-artifacts
-          key: path/in/bucket
 
   - name: print-message
     inputs:
@@ -41,9 +38,6 @@ spec:
       # and put it at /tmp/message
       - name: message
         path: /tmp/message
-        gcs:
-          bucket: fx-systemtrader-dev-artifacts
-          key: path/in/bucket
     container:
       image: alpine:latest
       command: [sh, -c]

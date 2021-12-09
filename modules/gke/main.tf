@@ -96,6 +96,35 @@ resource "google_container_node_pool" "gpu-node" {
   }
 }
 
+resource "google_container_node_pool" "highmemory-node" {
+  name = var.highmemory_node-name
+
+  cluster = google_container_cluster.cluster-1.id
+
+  initial_node_count = 0
+
+  autoscaling {
+    min_node_count = var.highmemory_node-min_node_count
+    max_node_count = var.highmemory_node-max_node_count
+  }
+
+  node_config {
+    machine_type = var.highmemory_node-machine_type
+
+    // Argoがcos-containerdでは動かないため, cosに変更
+    image_type = var.highmemory_node-image_type
+
+    service_account = google_service_account.gke-default-sa.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+    taint {
+      key    = "highmem"
+      value  = "present"
+      effect = "NO_SCHEDULE"
+    }
+  }
+}
 
 // Kubernetesに必要なサービスアカウントをmapにして，
 // 下のモジュールで一括作成している

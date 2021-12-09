@@ -3,3 +3,4 @@ fst/dummy_api/src/dummy_api.egg_info/*
 *.tfstate
 *.terraform*
 *account.json
+*venv*

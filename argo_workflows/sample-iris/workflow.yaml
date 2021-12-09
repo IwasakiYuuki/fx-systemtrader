@@ -27,9 +27,6 @@ spec:
       artifacts:
       - name: output_img
         path: /tmp/img.png
-        gcs:
-          bucket: fx-systemtrader-dev-artifacts
-          key: output_img
 
   - name: upload-result
     container:
@@ -40,6 +37,3 @@ spec:
       artifacts:
       - name: input_img
         path: /tmp/img.png
-        gcs:
-          bucket: fx-systemtrader-dev-artifacts
-          key: output_img

@@ -64,3 +64,23 @@ variable "gpu_node-gpu_type" {
 variable "gpu_node-gpu_count" {
   default = 1
 }
+
+variable "highmemory_node-name" {
+  default = "highmemory-node-pool-1"
+}
+
+variable "highmemory_node-min_node_count" {
+  default = 0
+}
+
+variable "highmemory_node-max_node_count" {
+  default = 3
+}
+
+variable "highmemory_node-machine_type" {
+  default = "n2-highmem-2"
+}
+
+variable "highmemory_node-image_type" {
+  default = "COS"
+}

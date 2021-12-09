@@ -59,10 +59,19 @@ module "get-rates" {
 }
 
 //================================
-// The function to get daily rates
+// The function to update DWH
 //================================
 module "update-dwh" {
   source  = "../../modules/update_dwh"
+  project = var.project
+  //  vpc-con = module.vpc.subnet-1-vpc-con
+}
+
+//================================
+// The function to get emotweet
+//================================
+module "get-emotweet" {
+  source  = "../../modules/get_emotweets"
   project = var.project
   //  vpc-con = module.vpc.subnet-1-vpc-con
 }
