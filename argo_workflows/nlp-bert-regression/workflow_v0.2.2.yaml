@@ -1,0 +1,185 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: nlp-bert-regression-
+spec:
+  entrypoint: nlp-bert-regression-all-emotion
+  serviceAccountName: argo-tutorial-sa
+
+  templates:
+  - name: nlp-bert-regression-all-emotion
+    steps:
+    - - name: nlp-bert-regression-all-emotion
+        template: nlp-bert-regression
+        arguments:
+          parameters:
+          - name: emotion
+            value: "{{item}}"
+          - name: model_version
+            value: "0.2.2"
+        withItems:
+        - happy
+        - sad
+        - disgust
+        - anger
+        - fear
+        - surprise
+
+  - name: nlp-bert-regression
+    inputs:
+      parameters:
+      - name: emotion
+      - name: model_version
+    steps:
+    - - name: get-train-data
+        templateRef:
+          name: common-template
+          template: get-data-from-bigquery
+        arguments:
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "annotated_data"
+          - name: where
+            value: "emotion = '{{inputs.parameters.emotion}}' AND used_for = 'train'"
+      - name: get-extra-train-data
+        templateRef:
+          name: common-template
+          template: get-data-from-bigquery
+        arguments:
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "cleaned_data"
+          - name: where
+            value: "emotion = '{{inputs.parameters.emotion}}' AND annotated = TRUE AND distance < 1.5"
+      - name: get-valid-data
+        templateRef:
+          name: common-template
+          template: get-data-from-bigquery
+        arguments:
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "annotated_data"
+          - name: where
+            value: "emotion = '{{inputs.parameters.emotion}}' AND used_for = 'valid'"
+    - - name: delete-bias-extra-train-data
+        template: delete-bias-extra-train-data
+        arguments:
+          artifacts:
+          - name: input_data
+            from: "{{steps.get-extra-train-data.outputs.artifacts.output_data}}"
+          parameters:
+          - name: bias_percentage
+            value: 10
+    - - name: merge-extra-train-data
+        template: merge-extra-train-data
+        arguments:
+          artifacts:
+          - name: train_data
+            from: "{{steps.get-train-data.outputs.artifacts.output_data}}"
+          - name: extra_train_data
+            from: "{{steps.delete-bias-extra-train-data.outputs.artifacts.output_data}}"
+    - - name: training
+        template: training
+        arguments:
+          artifacts:
+          - name: train_data
+            from: "{{steps.merge-extra-train-data.outputs.artifacts.output_data}}"
+          - name: valid_data
+            from: "{{steps.get-valid-data.outputs.artifacts.output_data}}"
+          - name: test_data
+            from: "{{steps.get-valid-data.outputs.artifacts.output_data}}"
+          parameters:
+          - name: emotion
+            value: "{{inputs.parameters.emotion}}"
+          - name: model_version
+            value: "{{inputs.parameters.model_version}}"
+
+  - name: training
+    container:
+      image: gcr.io/fx-systemtrader-dev/nlp-bert-regression-training
+      env:
+      - name: MLFLOW_TRACKING_URI
+        value: "http://mlflow-server.default.svc.cluster.local:5000"
+      command:
+      - sh
+      - -c
+      - |
+        python main.py \
+        --output_dir=outputsa \
+        --per_device_train_batch_size=8 \
+        --per_device_eval_batch_size=8 \
+        --logging_strategy=epoch \
+        --evaluation_strategy=epoch \
+        --disable_tqdm=true \
+        --num_train_epochs=5 \
+        --label_field_name=intensity \
+        --save_strategy=epoch \
+        --save_total_limit=1 \
+        --load_best_model_at_end=true \
+        --gpu \
+        --do_test \
+        --mlflow_emotion_tag="{{inputs.parameters.emotion}}" \
+        --mlflow_model_ver_tag="{{inputs.parameters.model_version}}"
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+    inputs:
+      artifacts:
+      - name: train_data
+        path: /tmp/train.csv
+      - name: valid_data
+        path: /tmp/valid.csv
+      - name: test_data
+        path: /tmp/test.csv
+      parameters:
+      - name: emotion
+      - name: model_version
+
+  - name: merge-extra-train-data
+    script:
+      image: debian:9.4
+      command: [bash]
+      source: |
+        awk -F',' -v 'OFS=,' 'NR<=FNR {print $2,$4} FNR!=1&&NR>FNR {print $2,$6}' /tmp/train.csv /tmp/extra-train.csv > /tmp/output.csv
+    inputs:
+      artifacts:
+      - name: train_data
+        path: /tmp/train.csv
+      - name: extra_train_data
+        path: /tmp/extra-train.csv
+    outputs:
+      artifacts:
+      - name: output_data
+        path: /tmp/output.csv
+
+  - name: delete-bias-extra-train-data
+    container:
+      image: gcr.io/fx-systemtrader-dev/nlp-bert-regression-delete-bias
+      command:
+      - sh
+      - -c
+      - |
+        python main.py \
+        --bias_percentage="{{inputs.parameters.bias_percentage}}"
+    inputs:
+      artifacts:
+      - name: input_data
+        path: /tmp/input.csv
+      parameters:
+      - name: bias_percentage
+    outputs:
+      artifacts:
+      - name: output_data
+        path: /tmp/output.csv
