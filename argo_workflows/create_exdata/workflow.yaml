@@ -1,0 +1,198 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: create-exdata-steps-
+spec:
+  entrypoint: create-exdata-all-emotion
+  serviceAccountName: argo-tutorial-sa
+
+  templates:
+  - name: create-exdata-all-emotion
+    steps:
+    - - name: create-exdata-by-emotion
+        template: create-exdata
+        arguments:
+          parameters:
+          - name: emotion
+            value: "{{item}}"
+        withItems:
+        - happy
+        - sad
+        - disgust
+        - anger
+        - fear
+        - surprise
+
+  - name: create-exdata
+    synchronization:
+      mutex:
+        name: create-exdata
+    inputs:
+      parameters:
+      - name: emotion
+    steps:
+    - - name: get-unannotated-data-num
+        templateRef:
+          name: common-template
+          template: get-data-num-from-bigquery
+        arguments:
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "cleaned_data"
+          - name: id_field_name
+            value: "id_str"
+          - name: where
+            value: "annotated IS NULL AND emotion = '{{inputs.parameters.emotion}}'"
+    - - name: generate-loop-items
+        template: generate-loop-items
+        arguments:
+          parameters:
+          - name: data_num
+            value: "{{steps.get-unannotated-data-num.outputs.parameters.data_num}}"
+          - name: limit
+            value: 50000
+    - - name: annotation-loop
+        template: annotation-loop
+        arguments:
+          parameters:
+          - name: index
+            value: "{{item}}"
+          - name: emotion
+            value: "{{inputs.parameters.emotion}}"
+        withSequence: 
+          count: "{{steps.generate-loop-items.outputs.result}}"
+
+  - name: generate-loop-items
+    script:
+      image: python:alpine3.6
+      command: [python]
+      source: |
+        import math
+        print(str(math.ceil({{inputs.parameters.data_num}}/{{inputs.parameters.limit}})))
+    inputs:
+      parameters:
+      - name: data_num
+      - name: limit
+
+  - name: annotation-loop
+    synchronization:
+      mutex:
+        name: annotation-loop
+    inputs:
+      parameters:
+      - name: index
+      - name: emotion
+    steps:
+    - - name: get-annotated-data
+        templateRef:
+          name: common-template
+          template: get-data-from-bigquery
+        arguments:
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "annotated_data"
+          - name: where
+            value: "emotion = '{{inputs.parameters.emotion}}'"
+      - name: get-extra-data
+        templateRef:
+          name: common-template
+          template: get-data-from-bigquery
+        arguments:
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "cleaned_data"
+          - name: where
+            value: "(annotated IS NULL OR annotated IS FALSE) AND emotion = '{{inputs.parameters.emotion}}'"
+          - name: limit
+            value: 50000
+    - - name: tokenize-annotated-data
+        templateRef:
+          name: common-template
+          template: tokenizer
+        arguments:
+          artifacts:
+          - name: input_data
+            from: "{{steps.get-annotated-data.outputs.artifacts.output_data}}"
+          parameters:
+          - name: text_field_names
+            value: "text"
+      - name: tokenize-extra-data
+        templateRef:
+          name: common-template
+          template: tokenizer
+        arguments:
+          artifacts:
+          - name: input_data
+            from: "{{steps.get-extra-data.outputs.artifacts.output_data}}"
+          parameters:
+          - name: text_field_names
+            value: "text"
+    - - name: annotation
+        template: annotation
+        arguments:
+          artifacts:
+          - name: input_model
+            from: "{{steps.tokenize-annotated-data.outputs.artifacts.output_data}}"
+          - name: input_data
+            from: "{{steps.tokenize-extra-data.outputs.artifacts.output_data}}"
+    - - name: upsert-to-bigquery
+        templateRef:
+          name: common-template
+          template: upload-data-to-bigquery
+        arguments:
+          artifacts:
+          - name: input_data
+            from: "{{steps.annotation.outputs.artifacts.output_data}}"
+          parameters:
+          - name: project_id
+            value: "fx-systemtrader-dev"
+          - name: db_name
+            value: "emotweet"
+          - name: table_name
+            value: "cleaned_data"
+          - name: dtype_dict
+            value: "{'id_str': 'str', 'text': 'object', 'emotion': 'object', 'created_at': 'datetime64', 'annotated': 'bool', 'intensity': 'float64', 'distance': 'float64', 'indice_id_str': 'str'}"
+          - name: id_field_name
+            value: "id_str"
+          - name: update_field_names
+            value: "annotated intensity distance indice_id_str"
+
+  - name: annotation
+    container:
+      image: gcr.io/fx-systemtrader-dev/annotation
+      resources:
+        limits:
+          memory: "10Gi"
+        requests:
+          memory: "10Gi"
+    tolerations:
+    - key: "highmem"
+      value: "present"
+      effect: "NoSchedule"
+    inputs:
+      artifacts:
+      - name: input_model
+        path: /tmp/input_model.csv
+      - name: input_data
+        path: /tmp/input_data.csv
+      - name: model_files
+        path: /tmp/model_files
+        gcs:
+          bucket: "fx-systemtrader-dev-artifacts"
+          key: "argo/jawiki_model/jawiki_model.tgz"
+    outputs:
+      artifacts:
+      - name: output_data
+        path: /tmp/output.csv
